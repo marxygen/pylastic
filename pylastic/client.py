@@ -1,7 +1,6 @@
-
-
 class ElasticClient:
     """
     ElasticSearch Client
     """
+
     ...

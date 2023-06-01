@@ -5,7 +5,6 @@ from pylastic.utils.coordinates import is_valid_longitude, is_valid_latitude
 
 
 class GeoPoint(ESType):
-
     @classmethod
     def get_valid_object(cls, value: Any) -> Optional[Any]:
         """
@@ -19,24 +18,32 @@ class GeoPoint(ESType):
 
         if isinstance(value, dict):
             # GeoJSON
-            if value.get('type') == 'Point' and isinstance(value.get('coordinates'), list):
-                lon, lat = value['coordinates']
+            if value.get("type") == "Point" and isinstance(
+                value.get("coordinates"), list
+            ):
+                lon, lat = value["coordinates"]
 
-            if value.get('lat') and value.get('lon'):
-                lat, lon = value['lat'], value['lon']
+            if value.get("lat") and value.get("lon"):
+                lat, lon = value["lat"], value["lon"]
 
         elif isinstance(value, list):
             lon, lat = value
 
         elif isinstance(value, str):
-            if value.startswith('POINT'):
+            if value.startswith("POINT"):
                 # Well-Known Text POINT
-                lon, lat = value[len('POINT'):-1].strip().strip('(').strip(')').split(' ') or [None, None]
+                lon, lat = value[len("POINT") : -1].strip().strip("(").strip(")").split(
+                    " "
+                ) or [None, None]
 
             if not lon or not lat:
-                lat, lon = value.replace(' ', '').split(',')
+                lat, lon = value.replace(" ", "").split(",")
 
-        if not all([lat, lon]) or not is_valid_longitude(float(lon)) or not is_valid_latitude(float(lat)):
+        if (
+            not all([lat, lon])
+            or not is_valid_longitude(float(lon))
+            or not is_valid_latitude(float(lat))
+        ):
             return None
 
         return value

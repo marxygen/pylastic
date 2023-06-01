@@ -13,14 +13,16 @@ class ESType:
     def is_valid_value(cls, value: Any, raise_exception: bool = True) -> bool:
         try:
             valid = cls.get_valid_object(value)
-        except: # noqa
+        except:  # noqa
             if raise_exception:
                 raise
             return False
 
         if valid is None:
             if raise_exception:
-                raise ValueError(f'Value "{value}" cannot be converted to type {cls.__name__}')
+                raise ValueError(
+                    f'Value "{value}" cannot be converted to type {cls.__name__}'
+                )
             return False
 
         return True
