@@ -53,3 +53,5 @@ These types will be used to *create a mapping* so that ES can correctly process 
   - `[ -71.34, 41.12 ]`, (lon, lat)
   - `"41.12,-71.34"`, (**lat, lon**)
 
+**Marking fields as optional** \
+To mark a field as optional, use `typing.Optional` with the type it's supposed to have, e.g. `Optional[GeoPoint]`

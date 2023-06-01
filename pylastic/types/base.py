@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from typing import Any, Optional
 
 
-class ESType:
+class ElasticType:
     """
     Base ES Field Type class.
 

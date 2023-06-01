@@ -1,10 +1,10 @@
 from typing import Any, Optional
 
-from pylastic.types.base import ESType
+from pylastic.types.base import ElasticType
 from pylastic.utils.coordinates import is_valid_longitude, is_valid_latitude
 
 
-class GeoPoint(ESType):
+class GeoPoint(ElasticType):
     @classmethod
     def get_valid_object(cls, value: Any) -> Optional[Any]:
         """
