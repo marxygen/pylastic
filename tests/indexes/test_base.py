@@ -56,6 +56,13 @@ def test_get_fields_with_types():
 
 
 def test_get_mapping():
+    Example.Meta.id_field = "a"
+    assert Example.id_field == "a"
+    assert Example.get_mapping() == {
+        "mappings": {"properties": {"b": "integer", "c": "text", "g": "geo_point"}}
+    }
+
+    Example.Meta.id_field = "_id"
     assert Example.get_mapping() == {
         "mappings": {
             "properties": {"a": "text", "b": "integer", "c": "text", "g": "geo_point"}

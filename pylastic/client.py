@@ -33,4 +33,3 @@ class ElasticClient:
         the generated mapping will be used
         """
         self._client.create()
-
