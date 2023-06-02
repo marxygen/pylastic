@@ -5,6 +5,9 @@ from pylastic.utils.coordinates import is_valid_longitude, is_valid_latitude
 
 
 class GeoPoint(ElasticType):
+    class Meta:
+        type = "geo_point"
+
     @classmethod
     def get_valid_object(cls, value: Any) -> Optional[Any]:
         """

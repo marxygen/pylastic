@@ -11,25 +11,47 @@ class Example(ElasticIndex):
     a: str
     b: int
     c: Optional[str]
+    g: GeoPoint
 
 
 def test_is_dataclass():
     assert is_dataclass(Example)
 
 
-def test_geopoint():
+def test_validation():
     class TestGeo(ElasticIndex):
         point: GeoPoint
         optional_point: Optional[GeoPoint] = None
 
-    TestGeo(point={'lat': 12, 'lon': 20}).validate()
-    TestGeo(point={'lat': 12, 'lon': 20}, optional_point={'lat': 12, 'lon': 20}).validate()
+    TestGeo(point={"lat": 12, "lon": 20}).validate()
+    TestGeo(
+        point={"lat": 12, "lon": 20}, optional_point={"lat": 12, "lon": 20}
+    ).validate()
 
     with pytest.raises(ValueError):
-        TestGeo(point={'lat': "91", 'lon': "10"}).validate()
+        TestGeo(point={"lat": "91", "lon": "10"}).validate()
 
     with pytest.raises(ValueError):
-        TestGeo(point={'lat': "90", 'lon': "181"}).validate()
+        TestGeo(point={"lat": "90", "lon": "181"}).validate()
 
     with pytest.raises(ValueError):
-        TestGeo(point={'lat': "90", 'lon': "180"}, optional_point={'lat': 12, 'lon': 181}).validate()
+        TestGeo(
+            point={"lat": "90", "lon": "180"}, optional_point={"lat": 12, "lon": 181}
+        ).validate()
+
+
+def test_get_fields_with_types():
+    assert Example._get_fields_with_types() == {
+        "a": str,
+        "b": int,
+        "c": str,
+        "g": GeoPoint,
+    }
+
+
+def test_get_mapping():
+    assert Example.get_mapping() == {
+        "mappings": {
+            "properties": {"a": "text", "b": "integer", "c": "text", "g": "geo_point"}
+        }
+    }

@@ -7,6 +7,7 @@ A user-friendly high-level Elasticsearch client wrapper
 of `Elasticsearch` class from the official package of the corresponding version but also
 provides convenience methods. However, the most useful part is the _indexes_.
 
+
 ## Indexes
 You can define an index as a class (although it's technically a dataclass) and define
 fields that you would like to have in your index. 
@@ -26,7 +27,7 @@ class Comment(ElasticIndex):
 Now the `Comment` class is a dataclass, and you can also do CRUD operations with it. However, we'll
 postpone that to review available field definitions.
 
-### Field Definitions
+### Defining Fields
 Specify field along with its type using annotations:
 ```python
 string_field: str
@@ -55,3 +56,10 @@ These types will be used to *create a mapping* so that ES can correctly process 
 
 **Marking fields as optional** \
 To mark a field as optional, use `typing.Optional` with the type it's supposed to have, e.g. `Optional[GeoPoint]`
+
+**Creating new field types**
+1. Subclass `pylastic.types.base.ElasticType`
+2. Define `get_valid_object` _class method_ that validates the object definition (see "GeoType" for example)
+3. (Optional) Define `Meta.type` that contains ES type name (e.g. `geo_point` for `GeoPoint`, ...)
+
+## 
