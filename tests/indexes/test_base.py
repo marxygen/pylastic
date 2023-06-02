@@ -10,8 +10,14 @@ from pylastic.types import GeoPoint
 class Example(ElasticIndex):
     a: str
     b: int
-    c: Optional[str]
     g: GeoPoint
+    c: Optional[str] = None
+
+    class Meta:
+        index = "example"
+
+
+example_instance = Example(a="abc", b=3, g={"lat": 20, "lon": 30})
 
 
 def test_is_dataclass():
@@ -55,3 +61,22 @@ def test_get_mapping():
             "properties": {"a": "text", "b": "integer", "c": "text", "g": "geo_point"}
         }
     }
+
+
+def test_get_index():
+    assert example_instance.get_index() == "example"
+
+
+def test_empty_custom_id():
+    Example.Meta.id_field = "c"
+    with pytest.raises(ValueError):
+        ei = Example(a="abc", b=3, g={"lat": 20, "lon": 30})
+        assert ei.get_id() is None
+        ei.validate()
+
+    # If id field is not overridden, `None` is the accepted value
+    Example.Meta.id_field = "_id"
+
+    ei.validate()
+    assert getattr(ei, "_id", None) is None
+    assert ei.get_id() is None

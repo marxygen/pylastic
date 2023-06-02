@@ -1,6 +1,6 @@
 import dataclasses
 from dataclasses import dataclass, fields
-from typing import Union, get_origin, get_args, Dict, Type
+from typing import Union, get_origin, get_args, Dict, Type, Any
 
 from pylastic.types.base import ElasticType
 
@@ -17,10 +17,38 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
     Inherit indexes from it and manipulate them in ORM-like ways
     """
 
+    class Meta:
+        index: str = None
+        is_datastream: bool = False
+        id_field: str = '_id'
+
     def __init__(self, *args, **kwargs):
         # This method is just to shut type checks up
         # It's actually coming from a dataclass
         ...
+
+    @property
+    def is_datastream(self) -> bool:
+        return getattr(self.Meta, "is_datastream", False)
+
+    @property
+    def id_field(self) -> str | None:
+        return getattr(self.Meta, 'id_field', "_id")
+
+    def get_id(self) -> Any | None:
+        return getattr(self, self.id_field, None)
+
+    def get_index(self) -> str | None:
+        """
+        Get index name
+        Note that this method is not static, so you can override it in a subclass and create custom index names based on field values
+
+        :return: Name of the index or `None`, if not specified or not applicable (if `is_datastream` is set)
+        """
+        if self.is_datastream:
+            return None
+
+        return self.Meta.index
 
     @classmethod
     def get_mapping(cls) -> dict:
@@ -102,9 +130,10 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
         return mapping
 
     def validate(self):
+        # Validate fields
         for field in fields(self):
             value = getattr(self, field.name)
-            field_type: ElasticType = field.type
+            field_type: ElasticType | Type = field.type
             default = field.default
             if get_origin(field_type) is Union:
                 field_type = get_args(field_type)[0]
@@ -112,4 +141,20 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
             if value is None and default != dataclasses.MISSING:
                 continue
 
-            field_type.is_valid_value(value, raise_exception=True)
+            if not issubclass(field_type, ElasticType):
+                # Since it's a built-in type, attempt to transform it
+                field_type(value)
+                continue
+
+            try:
+                field_type.is_valid_value(value, raise_exception=True)
+            except Exception as e:
+                raise ValueError(f'{e.__class__.__name__} validating '
+                                 f'{self.__class__.__name__}.{field.name} ({value}): {e}') from e
+
+        if self.id_field != "_id":
+            if self.get_id() is None:
+                raise ValueError(f'If a custom ID field is specified, it must be populated')
+            # ID field is limited to 512 bytes
+            # TODO: remove _id field from mappings
+            # TOOD: add _serialize and _deserialize methods that are concious about _id field
