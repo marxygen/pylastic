@@ -31,23 +31,9 @@ You can use Pythonic types, but `pylastic` also provides a `pylastic.types` pack
 types ES supports (see them [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)).
 These types will be used to *create a mapping* so that ES can correctly process fields in your index.
 
-- `GeoPoint`. Allows to specify fields of type `geo_point`. Supports the following formats:
-  - GeoJSON. 
-  
-    `{ 
-      "type": "Point",
-      "coordinates": [-71.34, 41.12]
-    }`, (lon, lat)
-  - WKTP.
-  
-    `"POINT (-71.34 41.12)"`, (lon, lat)
-  - `{ 
-    "lat": 41.12,
-    "lon": -71.34
-  }`
-  - `[ -71.34, 41.12 ]`, (lon, lat)
-  - `"41.12,-71.34"`, (**lat, lon**)
-- `Text` (represents `text` and `match_only_text` types). 
+- `GeoPoint`. Allows to specify fields of type `geo_point`. Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
+- `Text` (represents `text` and `match_only_text` types). Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/8.8/text.html)
+- `Keyword` (represents `keyword`, `constant_keyword` and `wildcard`). Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/8.8/keyword.html#keyword)
 
 #### Marking fields as optional
 To mark a field as optional, use `typing.Optional` with the type it's supposed to have, e.g. `Optional[GeoPoint]`
