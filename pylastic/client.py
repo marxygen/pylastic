@@ -32,4 +32,15 @@ class ElasticClient:
         :param mapping: Mapping to specify. If `index` is a string, this parameter is **required**. If `index` is an `ElasticIndex` subclass,
         the generated mapping will be used
         """
-        self._client.create()
+        self._client.create()  # TODO: make it work
+
+    def execute(self, template: RequestTemplate | dict | str | List[RequestTemplate] | List[dict] | List[str]):
+        """
+        Execute a request
+
+        :param template: Request template to execute. If it's a `dict`, the client assumes the data provided is `RequestTemplate.body`.
+        If it's a string, the client assumes it's `RequestTemplate.query_params`
+
+        :return:
+        """
+        template = RequestTemplate.build(template)
