@@ -29,6 +29,13 @@ class RequestTemplate:
 
     @classmethod
     def build(cls, value: dict | str | List[dict] | List[str] | 'RequestTemplate' | List['RequestTemplate']) -> 'RequestTemplate' | List['RequestTemplate']:
+        """
+        :param value: Data to convert into RequestTemplate.
+        If it's a `dict`, the client assumes the data provided is `RequestTemplate.body`.
+        If it's a string, the client assumes it's `RequestTemplate.query_params`
+
+        :return: A RequestTemplate instance or a list of instances
+        """
         if RequestTemplate.is_template(value):
             return value
 
