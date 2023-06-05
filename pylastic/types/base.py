@@ -1,4 +1,3 @@
-from abc import abstractmethod, ABC
 from typing import Any, Optional
 
 
@@ -8,6 +7,12 @@ class ElasticType:
 
     Defines an interface that is used by the index to validate types
     """
+
+    def __init__(self):
+        """
+        Instantiate ElasticType. Subclasses might override this method to add new functionality
+        """
+        pass
 
     class Meta:
         # Must be defined in a subclass
@@ -45,3 +50,34 @@ class ElasticType:
         If this object is valid (i.e. it'll be recognized as this type by ES), return it. Otherwise, return `None`
         """
         return value
+
+    @staticmethod
+    def get_mapping_of(class_or_instance) -> dict:
+        """
+        Return object mapping (type, ...). Works with `ElasticType` subclasses or their instances.
+        Evaluates in the following order:
+        - If it's an instance:
+            1. Check if `get_mapping` is defined and returns a dict. If so, use it
+            2. Use `Meta.type`
+        - If it's a class:
+            Use `Meta.type`
+
+        If an ElasticType subclass wants to override its mapping definition,
+        overriding the `get_mapping` method is the way to go!
+
+        :return: Mapping of the class or instance
+        """
+        if isinstance(class_or_instance, ElasticType):
+            custom_mapping = getattr(
+                class_or_instance, "get_mapping", lambda: None
+            )()  # noqa
+            if isinstance(custom_mapping, dict):
+                return custom_mapping
+            else:
+                return {"type": class_or_instance.Meta.type}
+        elif issubclass(class_or_instance, ElasticType):
+            return {"type": class_or_instance.Meta.type}
+        else:
+            raise ValueError(
+                f"Unable to detect the elastic type of an object that is not a `ElasticType` subclass"
+            )

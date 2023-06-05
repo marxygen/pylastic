@@ -56,6 +56,8 @@ To mark a field as optional, use `typing.Optional` with the type it's supposed t
 1. Subclass `pylastic.types.base.ElasticType`
 2. Define `get_valid_object` _class method_ that validates the object definition (see "GeoType" for example)
 3. (Optional) Define `Meta.type` that contains ES type name (e.g. `geo_point` for `GeoPoint`, ...)
+4. (Optional) Define `get_mapping(self) -> dict` method that returns object's mapping (e.g. `{'type': '...', ...}`).
+This might be useful if your class has a custom `__init__` method (mapping definition changes based on parameters provided)
 
 ### Specifying index metadata
 Index metadata defines how an `ElasticIndex` subclass is presented in Elasticsearch. The following

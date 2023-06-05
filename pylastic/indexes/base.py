@@ -88,23 +88,23 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
         :return: Full mapping
         """
 
-        def resolve_type(type_: Type | ElasticType) -> str | None:
-            if issubclass(type_, ElasticType):
-                return type_.Meta.type
+        def resolve_type(type_: Type | ElasticType) -> dict | None:
+            if isinstance(type_, ElasticType) or issubclass(type_, ElasticType):
+                return ElasticType.get_mapping_of(type_)
 
             match type_.__name__:
                 case "str":
-                    return "text"
+                    return {"type": "text"}
                 case "int":
-                    return "integer"
+                    return {"type": "integer"}
                 case "float":
-                    return "float"
+                    return {"type": "float"}
                 case "bool":
-                    return "boolean"
+                    return {"type": "boolean"}
                 case "dict":
-                    return "object"
+                    return {"type": "object"}
                 case "list":
-                    return "object"
+                    return {"type": "object"}
                 case _:
                     return None
 
@@ -115,8 +115,6 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
                 continue
 
             es_type = resolve_type(type_)
-            if not es_type:
-                continue
             properties[name] = es_type
 
         return {"mappings": {"properties": properties}}

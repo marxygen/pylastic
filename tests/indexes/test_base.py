@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 
 from pylastic.indexes import ElasticIndex
-from pylastic.types import GeoPoint
+from pylastic.types import GeoPoint, Text
 
 
 class Example(ElasticIndex):
@@ -18,6 +18,13 @@ class Example(ElasticIndex):
 
 
 example_instance = Example(a="abc", b=3, g={"lat": 20, "lon": 30})
+
+
+class CustomFieldExample(ElasticIndex):
+    g: Text(match_only_text=True, meta={"description": "Dynamically defined field"})
+
+    class Meta:
+        index = "cfex"
 
 
 def test_is_dataclass():
@@ -59,13 +66,37 @@ def test_get_mapping():
     Example.Meta.id_field = "a"
     assert Example.id_field == "a"
     assert Example.get_mapping() == {
-        "mappings": {"properties": {"b": "integer", "c": "text", "g": "geo_point"}}
+        "mappings": {
+            "properties": {
+                "b": {"type": "integer"},
+                "c": {"type": "text"},
+                "g": {"type": "geo_point"},
+            }
+        }
     }
 
     Example.Meta.id_field = "_id"
     assert Example.get_mapping() == {
         "mappings": {
-            "properties": {"a": "text", "b": "integer", "c": "text", "g": "geo_point"}
+            "properties": {
+                "a": {"type": "text"},
+                "b": {"type": "integer"},
+                "c": {"type": "text"},
+                "g": {"type": "geo_point"},
+            }
+        }
+    }
+
+
+def test_custom_field_mapping():
+    assert CustomFieldExample.get_mapping() == {
+        "mappings": {
+            "properties": {
+                "g": {
+                    "type": "match_only_text",
+                    "meta": {"description": "Dynamically defined field"},
+                }
+            }
         }
     }
 
