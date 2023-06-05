@@ -30,7 +30,7 @@ class Text(ElasticType):
         if match_only_text:
             self._type = "match_only_text"
         else:
-            self._type = 'text'
+            self._type = "text"
 
     def get_mapping(self) -> dict:
         mapping = {

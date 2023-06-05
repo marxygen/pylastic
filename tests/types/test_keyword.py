@@ -6,7 +6,7 @@ import pytest
 class KeywordType(ElasticIndex):
     id: Keyword()
     type: Keyword(constant_keyword=True)
-    uuid: Keyword(wildcard=True, meta={'description': "UUID"})
+    uuid: Keyword(wildcard=True, meta={"description": "UUID"})
 
 
 def test_id():
@@ -24,13 +24,12 @@ def test_type():
 def test_uuid():
     assert KeywordType.get_mapping()["mappings"]["properties"]["uuid"] == {
         "type": "wildcard",
-        "meta": {
-            "description": "UUID"
-        }
+        "meta": {"description": "UUID"},
     }
 
 
 def test_constant_and_wildcard():
     with pytest.raises(RuntimeError):
+
         class InvalidIndex(ElasticIndex):
             field: Keyword(constant_keyword=True, wildcard=True)

@@ -12,7 +12,9 @@ class Keyword(ElasticType):
     class Meta:
         type = "keyword"  # NOTE: this may be overriden by `self._type` during class instantiation
 
-    def __init__(self, constant_keyword: bool = False, wildcard: bool = False, **kwargs):
+    def __init__(
+        self, constant_keyword: bool = False, wildcard: bool = False, **kwargs
+    ):
         """
         Define a `keyword` (or `constant_keyword` or `wildcard` field)
 
@@ -27,14 +29,16 @@ class Keyword(ElasticType):
         self.custom_args = kwargs
 
         if all([constant_keyword, wildcard]):
-            raise RuntimeError(f'Unable to set `constant_keyword` and `wildcard` at the same time!')
+            raise RuntimeError(
+                f"Unable to set `constant_keyword` and `wildcard` at the same time!"
+            )
 
         if constant_keyword:
             self._type = "constant_keyword"
         elif wildcard:
-            self._type = 'wildcard'
+            self._type = "wildcard"
         else:
-            self._type = 'keyword'
+            self._type = "keyword"
 
     def get_mapping(self) -> dict:
         mapping = {
@@ -51,7 +55,12 @@ class Keyword(ElasticType):
             "meta",
             "null_value",
             "on_script_error",
-            "script", 'store', 'similarity', 'normalizer', 'split_queries_on_whitespace', 'time_series_dimension'
+            "script",
+            "store",
+            "similarity",
+            "normalizer",
+            "split_queries_on_whitespace",
+            "time_series_dimension",
         ):
             if (override := self.custom_args.get(optional_param)) is not None:
                 mapping[optional_param] = override

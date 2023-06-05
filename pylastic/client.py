@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 from elasticsearch import Elasticsearch
 from pylastic.indexes import ElasticIndex
+from pylastic.request_template import RequestTemplate
 
 
 class ElasticClient:
@@ -34,7 +35,15 @@ class ElasticClient:
         """
         self._client.create()  # TODO: make it work
 
-    def execute(self, template: RequestTemplate | dict | str | List[RequestTemplate] | List[dict] | List[str]):
+    def execute(
+        self,
+        template: RequestTemplate
+        | dict
+        | str
+        | List[RequestTemplate]
+        | List[dict]
+        | List[str],
+    ):
         """
         Execute a request
 

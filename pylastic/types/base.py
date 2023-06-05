@@ -74,8 +74,8 @@ class ElasticType:
             )()
             if isinstance(custom_mapping, dict):
                 return custom_mapping
-            elif custom_type := getattr(class_or_instance, '_type', None):
-                return {'type': custom_type}
+            elif custom_type := getattr(class_or_instance, "_type", None):
+                return {"type": custom_type}
             else:
                 return {"type": class_or_instance.Meta.type}
         elif issubclass(class_or_instance, ElasticType):

@@ -8,5 +8,5 @@ def test_iterables():
 
 
 def test_string():
-    assert is_iterable('a') is False
-    assert is_iterable(['a']) is True
+    assert is_iterable("a") is False
+    assert is_iterable(["a"]) is True

@@ -1,5 +1,3 @@
-
-
 def is_iterable(obj) -> bool:
     """
     Check if an object is iterable
@@ -16,4 +14,3 @@ def is_iterable(obj) -> bool:
         return True
     except TypeError:
         return False
-

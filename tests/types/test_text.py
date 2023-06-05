@@ -4,7 +4,7 @@ from pylastic.indexes import ElasticIndex
 
 class TextType(ElasticIndex):
     comment: Text(index=False)
-    id: Text(match_only_text=True, meta={'description': "ID Field"})
+    id: Text(match_only_text=True, meta={"description": "ID Field"})
     author: Text
 
 
@@ -18,7 +18,7 @@ def test_comment():
 def test_id():
     assert TextType.get_mapping()["mappings"]["properties"]["id"] == {
         "type": "match_only_text",
-        "meta": {'description': "ID Field"},
+        "meta": {"description": "ID Field"},
     }
 
 
