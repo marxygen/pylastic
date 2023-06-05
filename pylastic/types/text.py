@@ -10,6 +10,9 @@ class Text(ElasticType):
     This is one of the classes that can be configured to optimize storage, see more details below.
     """
 
+    class Meta:
+        type = "text"  # NOTE: this may be overriden by `self._type` during class instantiation
+
     def __init__(self, match_only_text: bool = False, **kwargs):
         """
         Define a `text` (or `match_only_text` field)
@@ -25,11 +28,13 @@ class Text(ElasticType):
         self.custom_args = kwargs
 
         if match_only_text:
-            self.Meta.type = "match_only_text"
+            self._type = "match_only_text"
+        else:
+            self._type = 'text'
 
     def get_mapping(self) -> dict:
         mapping = {
-            "type": self.Meta.type,
+            "type": self._type,
         }
         for optional_param in (
             "analyzer",
@@ -50,7 +55,7 @@ class Text(ElasticType):
             "term_vector",
             "meta",
         ):
-            if override := self.custom_args.get(optional_param):
+            if (override := self.custom_args.get(optional_param)) is not None:
                 mapping[optional_param] = override
 
         return mapping

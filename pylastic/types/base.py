@@ -58,6 +58,7 @@ class ElasticType:
         Evaluates in the following order:
         - If it's an instance:
             1. Check if `get_mapping` is defined and returns a dict. If so, use it
+            3. Check if `self._type` is defined on the instance (because `Meta` class is shared). If so, use it.
             2. Use `Meta.type`
         - If it's a class:
             Use `Meta.type`
@@ -68,11 +69,14 @@ class ElasticType:
         :return: Mapping of the class or instance
         """
         if isinstance(class_or_instance, ElasticType):
-            custom_mapping = getattr(
+            custom_mapping = getattr(  # noqa
                 class_or_instance, "get_mapping", lambda: None
-            )()  # noqa
+            )()
+            print(f"CS {custom_mapping}")
             if isinstance(custom_mapping, dict):
                 return custom_mapping
+            elif custom_type := getattr(class_or_instance, '_type', None):
+                return {'type': custom_type}
             else:
                 return {"type": class_or_instance.Meta.type}
         elif issubclass(class_or_instance, ElasticType):
