@@ -72,7 +72,6 @@ class ElasticType:
             custom_mapping = getattr(  # noqa
                 class_or_instance, "get_mapping", lambda: None
             )()
-            print(f"CS {custom_mapping}")
             if isinstance(custom_mapping, dict):
                 return custom_mapping
             elif custom_type := getattr(class_or_instance, '_type', None):
