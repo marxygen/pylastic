@@ -13,7 +13,7 @@ class RequestTemplate:
 
     path: str
     query_params: Optional[dict] = None
-    body: Optional[dict] = None
+    body: Optional[dict | str] = None
     headers: Optional[dict] = None
     method: str = "GET"
 

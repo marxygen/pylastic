@@ -161,4 +161,3 @@ def test_refresh(client):
         headers={"accept": "application/json", "content-type": "application/json"},
         body=None,
     )
-

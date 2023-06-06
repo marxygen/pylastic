@@ -1,7 +1,8 @@
 import dataclasses
+import json
 import sys
 from dataclasses import dataclass, fields
-from typing import Union, get_origin, get_args, Dict, Type, Any, Optional
+from typing import Union, get_origin, get_args, Dict, Type, Any, Optional, Sequence
 
 from pylastic.request_template import RequestTemplate
 from pylastic.types.base import ElasticType
@@ -130,6 +131,9 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
 
         return {"mappings": {"properties": properties}}
 
+    def get_body(self) -> dict:
+        return {field: getattr(self, field) for field in self._get_fields_with_types() if field != self.id_field}
+
     @classmethod
     def _get_fields_with_types(cls) -> Dict[str, "ElasticType"]:
         """
@@ -179,7 +183,6 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
             if sys.getsizeof(self.get_id()) > 512:
                 raise ValueError(f"Elasticsearch limits ID field length to 512 bytes")
             # TODO: remove _id field from mappings
-            # TODO: add _serialize and _deserialize methods that are concious about _id field
 
     @classmethod
     def _get_meta_attribute(cls, attr, default: Any = None) -> Any:
@@ -219,3 +222,23 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
         return RequestTemplate(
             path=f"/{index_name or cls.get_static_index()}/_refresh", method="POST"
         )
+
+    def get_create_document_request(self) -> RequestTemplate:
+        return RequestTemplate(
+            method="POST",
+            path=f"/{self.get_index()}/_doc/" + (self.get_id() or ""),
+            body=self.get_body(),
+        )
+
+    @staticmethod
+    def get_batch_create_request(
+        documents: Sequence["ElasticIndex"],
+    ) -> RequestTemplate:
+        # https://www.elastic.co/guide/en/elasticsearch/reference/8.8/docs-bulk.html#docs-bulk
+        body = ""
+        for d in documents:
+            body += (
+                json.dumps({"index": {"_index": d.get_index(), "_id": d.get_id()}}) + "\n" + json.dumps(d.get_body()) + "\n"
+            )
+        body += "\n"
+        return RequestTemplate(body=body, method="POST", path="/_bulk")

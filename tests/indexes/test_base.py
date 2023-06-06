@@ -159,3 +159,12 @@ def test_get_static_index_creation_request():
         },
         method="PUT",
     )
+
+
+def test_get_body():
+    assert example_instance.get_body() == {
+        "a": "abc",
+        "b": 3,
+        "g": {"lat": 20, "lon": 30},
+        "c": None,
+    }

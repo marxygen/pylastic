@@ -1,10 +1,10 @@
-from typing import Optional, List, Type, Sequence
-from elasticsearch import Elasticsearch
+from typing import Optional, List, Type, Sequence, Dict
+from elasticsearch import Elasticsearch, BadRequestError
 from pylastic.indexes import ElasticIndex
 from pylastic.request_template import RequestTemplate
 from elastic_transport._response import ApiResponse  # noqa
 
-from pylastic.utils.iterables import is_iterable, group_by_index
+from pylastic.utils.iterables import is_iterable, group_by_index, get_batches_with_size
 
 
 class ElasticClient:
@@ -64,7 +64,9 @@ class ElasticClient:
 
         return response
 
-    def create_index_for(self, objects: ElasticIndex | Sequence[ElasticIndex]) -> List[str]:
+    def create_index_for(
+        self, objects: ElasticIndex | Sequence[ElasticIndex], ignore_400: bool = True
+    ) -> List[str]:
         if not is_iterable(objects):
             objects = [objects]
 
@@ -72,12 +74,17 @@ class ElasticClient:
         for obj in objects:
             if (index := obj.get_index()) not in unique_indexes:
                 # Create an index for every unique index
-                self.create_index(obj.__class__, index_name=index)
+                try:
+                    self.create_index(obj.__class__, index_name=index)
+                except BadRequestError:
+                    pass
                 unique_indexes.append(index)
 
         return unique_indexes
 
-    def refresh_index(self, index: ElasticIndex | str | Sequence[ElasticIndex] | Sequence[str]) -> bool:
+    def refresh_index(
+        self, index: ElasticIndex | str | Sequence[ElasticIndex] | Sequence[str]
+    ) -> bool:
         """
         Refresh index.
 
@@ -87,15 +94,19 @@ class ElasticClient:
         """
 
         def _refresh(index_name):
-            return not bool(self.execute(
-                ElasticIndex.get_index_refresh_template(index_name)
-            )['_shards']['failed'])
+            return not bool(
+                self.execute(ElasticIndex.get_index_refresh_template(index_name))[
+                    "_shards"
+                ]["failed"]
+            )
 
         # `str` is not considered iterable in this function by design
         if not is_iterable(index):
             index = [index]
 
-        return all([_refresh(i if isinstance(i, str) else i.get_static_index()) for i in index])
+        return all(
+            [_refresh(i if isinstance(i, str) else i.get_static_index()) for i in index]
+        )
 
     def save(
         self,
@@ -116,12 +127,14 @@ class ElasticClient:
         if not is_iterable(objects):
             objects = [objects]
 
-        unique_indexes = []
-
         if create_indexes:
-            unique_indexes = self.create_index_for(objects)
+            self.create_index_for(objects, ignore_400=True)
 
-        ...
+        documents_by_index: Dict[str, List[ElasticIndex]] = group_by_index(objects)
+        for index, documents in documents_by_index.items():
+            batches = get_batches_with_size(documents, max_request_size * 1024 * 1024)
+            for batch in batches:
+                self.execute(ElasticIndex.get_batch_create_request(batch))
 
-        if refresh_after:
-            self.refresh_index(unique_indexes or list(group_by_index(objects).keys()))
+            if refresh_after:
+                self.refresh_index(index)
