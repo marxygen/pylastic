@@ -3,6 +3,7 @@ import sys
 from dataclasses import dataclass, fields
 from typing import Union, get_origin, get_args, Dict, Type, Any
 
+from pylastic.request_template import RequestTemplate
 from pylastic.types.base import ElasticType
 
 
@@ -51,6 +52,16 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
             return None
 
         return self.Meta.index
+
+    @classmethod
+    def get_static_index(cls) -> str | None:
+        """
+        Get `cls.Meta.index` field or `None`
+        """
+        try:
+            return cls.Meta.index
+        except AttributeError:
+            return None
 
     @classmethod
     def get_mapping(cls) -> dict:
@@ -169,3 +180,31 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
                 raise ValueError(f"Elasticsearch limits ID field length to 512 bytes")
             # TODO: remove _id field from mappings
             # TODO: add _serialize and _deserialize methods that are concious about _id field
+
+    @classmethod
+    def _get_meta_attribute(cls, attr, default: Any = None) -> Any:
+        try:
+            return getattr(cls.Meta, attr)
+        except AttributeError:
+            return default
+
+    @classmethod
+    def get_index_settings(cls) -> dict:
+        return {
+            "number_of_shards": cls._get_meta_attribute("primary_shards", 1),
+            "codec": cls._get_meta_attribute("compression", "default"),
+            "number_of_replicas": cls._get_meta_attribute("replicas", 1),
+            # Override and expand index settings
+            **cls._get_meta_attribute("index_settings", {}),
+        }
+
+    # Define request template builders
+    @classmethod
+    def get_static_index_creation_request(
+        cls, index_name: str = None
+    ) -> RequestTemplate:
+        return RequestTemplate(
+            method="PUT",
+            path=f"/{index_name or cls.get_static_index()}",
+            body={**cls.get_mapping(), "settings": cls.get_index_settings()},
+        )

@@ -1,8 +1,9 @@
-from typing import Optional, List
+from typing import Optional, List, Type
 from elasticsearch import Elasticsearch
 from pylastic.indexes import ElasticIndex
 from pylastic.request_template import RequestTemplate
-from elastic_transport._response import ApiResponse # noqa
+from elastic_transport._response import ApiResponse  # noqa
+
 
 class ElasticClient:
     """
@@ -24,23 +25,29 @@ class ElasticClient:
         :param scheme: HTTP/HTTPS
         """
         self.es_client = Elasticsearch(
-            hosts=[f"{scheme}://{host}:{port}"], basic_auth=(username, password)
+            hosts=[f"{scheme}://{host.strip('https://').strip('http://')}:{port}"],
+            basic_auth=(username, password),
         )
 
-    def create(self, index: ElasticIndex | str, mapping: Optional[dict] = None) -> None:
+    def create_index(self, index: Type[ElasticIndex], index_name: Optional[str] = None) -> bool:
         """
-        Create an Elasticsearch index.
+        Create an Elasticsearch index from a `ElasticIndex` subclass (**not an instance**)
 
-        :param index: Index name as string or an `ElasticIndex` subclass
-        :param mapping: Mapping to specify. If `index` is a string, this parameter is **required**. If `index` is an `ElasticIndex` subclass,
-        the generated mapping will be used
+        :param index: `ElasticIndex` subclass. Class **must** have `Meta.index` set or `index_name` argument must be specified.
+        :param index_name: Custom index name to use
+        :return: Whether the index was successfully created in the cluster
         """
-        self.es_client.create()  # TODO: make it work
+        if not index.get_static_index() and index_name is None:
+            raise RuntimeError(
+                f"Unable to create an elastic index with dynamic definition from a class. "
+                f"Pass a class instance"
+            )
 
-    def execute(
-        self,
-        template: RequestTemplate
-    ):
+        return self.execute(index.get_static_index_creation_request(index_name))[
+            "acknowledged"
+        ]
+
+    def execute(self, template: RequestTemplate):
         """
         Execute a request
 
@@ -49,3 +56,5 @@ class ElasticClient:
         :return:
         """
         response: ApiResponse = self.es_client.perform_request(**template.to_kwargs())
+
+        return response

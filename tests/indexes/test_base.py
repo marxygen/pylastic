@@ -4,6 +4,7 @@ from typing import Optional
 import pytest
 
 from pylastic.indexes import ElasticIndex
+from pylastic.request_template import RequestTemplate
 from pylastic.types import GeoPoint, Text
 
 
@@ -15,6 +16,8 @@ class Example(ElasticIndex):
 
     class Meta:
         index = "example"
+        primary_shards = 3
+        index_settings = {"max_terms_count": 10_000}
 
 
 example_instance = Example(a="abc", b=3, g={"lat": 20, "lon": 30})
@@ -118,3 +121,41 @@ def test_empty_custom_id():
     ei.validate()
     assert getattr(ei, "_id", None) is None
     assert ei.get_id() is None
+
+
+def test_get_meta_attribute():
+    assert Example._get_meta_attribute("index") == "example"
+    assert Example._get_meta_attribute("nonexistent") is None
+
+
+def test_get_index_settings():
+    assert Example.get_index_settings() == {
+        "number_of_shards": 3,
+        "codec": "default",
+        "number_of_replicas": 1,
+        "max_terms_count": 10_000,
+    }
+
+
+def test_get_static_index_creation_request():
+    assert Example.get_static_index_creation_request() == RequestTemplate(
+        path="/example",
+        query_params=None,
+        body={
+            "mappings": {
+                "properties": {
+                    "a": {"type": "text"},
+                    "b": {"type": "integer"},
+                    "g": {"type": "geo_point"},
+                    "c": {"type": "text"},
+                }
+            },
+            "settings": {
+                "number_of_shards": 3,
+                "codec": "default",
+                "number_of_replicas": 1,
+                "max_terms_count": 10000,
+            },
+        },
+        method="PUT",
+    )
