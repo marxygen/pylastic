@@ -66,6 +66,8 @@ To customize index creation, redefine `ElasticIndex.get_index()` method that ret
 ## Client
 `ElasticClient` is the wrapper for the official `Elasticsearch` package and exposes all the available methods but
 also provides convenience methods:
-- `create_index(index: ElasticIndex`, index_name: Optional[str] = None). Creates an index
-- `execute(template)`. Executes a `RequestTemplate` instance
+- `create_index(index: ElasticIndex`, index_name: Optional[str] = None). Creates an index.
+- `execute(template)`. Executes a `RequestTemplate` instance.
+- `save(objects)`. Saves one or more `ElasticType` instances to the index.
+- `refresh_index(index)`. Refreshes the index.
 

@@ -1,7 +1,7 @@
 import dataclasses
 import sys
 from dataclasses import dataclass, fields
-from typing import Union, get_origin, get_args, Dict, Type, Any
+from typing import Union, get_origin, get_args, Dict, Type, Any, Optional
 
 from pylastic.request_template import RequestTemplate
 from pylastic.types.base import ElasticType
@@ -207,4 +207,15 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
             method="PUT",
             path=f"/{index_name or cls.get_static_index()}",
             body={**cls.get_mapping(), "settings": cls.get_index_settings()},
+        )
+
+    def get_index_creation_request(self) -> RequestTemplate:
+        return self.get_static_index_creation_request(index_name=self.get_index())
+
+    @classmethod
+    def get_index_refresh_template(
+        cls, index_name: Optional[str] = None
+    ) -> RequestTemplate:
+        return RequestTemplate(
+            path=f"/{index_name or cls.get_static_index()}/_refresh", method="POST"
         )

@@ -1,8 +1,10 @@
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Sequence
 from elasticsearch import Elasticsearch
 from pylastic.indexes import ElasticIndex
 from pylastic.request_template import RequestTemplate
 from elastic_transport._response import ApiResponse  # noqa
+
+from pylastic.utils.iterables import is_iterable, group_by_index
 
 
 class ElasticClient:
@@ -29,9 +31,12 @@ class ElasticClient:
             basic_auth=(username, password),
         )
 
-    def create_index(self, index: Type[ElasticIndex], index_name: Optional[str] = None) -> bool:
+    def create_index(
+        self, index: Type[ElasticIndex], index_name: Optional[str] = None
+    ) -> bool:
         """
-        Create an Elasticsearch index from a `ElasticIndex` subclass (**not an instance**)
+        Create an Elasticsearch index from a `ElasticIndex` subclass (**not an instance**).
+        This method also will set up index lifecycle policies (ILP) if they're configured for the index.
 
         :param index: `ElasticIndex` subclass. Class **must** have `Meta.index` set or `index_name` argument must be specified.
         :param index_name: Custom index name to use
@@ -58,3 +63,65 @@ class ElasticClient:
         response: ApiResponse = self.es_client.perform_request(**template.to_kwargs())
 
         return response
+
+    def create_index_for(self, objects: ElasticIndex | Sequence[ElasticIndex]) -> List[str]:
+        if not is_iterable(objects):
+            objects = [objects]
+
+        unique_indexes = []
+        for obj in objects:
+            if (index := obj.get_index()) not in unique_indexes:
+                # Create an index for every unique index
+                self.create_index(obj.__class__, index_name=index)
+                unique_indexes.append(index)
+
+        return unique_indexes
+
+    def refresh_index(self, index: ElasticIndex | str | Sequence[ElasticIndex] | Sequence[str]) -> bool:
+        """
+        Refresh index.
+
+        :param index: Index to refresh
+        :return: Whether the operation was successful. If multiple indexes are specified,
+        `True` will be returned only if every operation finished successfully
+        """
+
+        def _refresh(index_name):
+            return not bool(self.execute(
+                ElasticIndex.get_index_refresh_template(index_name)
+            )['_shards']['failed'])
+
+        # `str` is not considered iterable in this function by design
+        if not is_iterable(index):
+            index = [index]
+
+        return all([_refresh(i if isinstance(i, str) else i.get_static_index()) for i in index])
+
+    def save(
+        self,
+        objects: ElasticIndex | Sequence[ElasticIndex],
+        create_indexes: bool = True,
+        max_request_size: int = 99,
+        refresh_after: bool = False,
+    ) -> None:
+        """
+        Save one or more `ElasticIndex` subclass objects.
+
+        :param objects: A single instance or a list of instances of classes, inherited from `ElasticIndex`
+        :param create_indexes: Whether to create indexes if they don't exist (introduces overhead because before the insertion begins,
+         a check request for every unique index will be sent)
+        :param max_request_size: Max request size in MB. Note that Elastic limits the max request size to 100MB.
+        :param refresh_after: Whether to run a manual refresh after the saving completes
+        """
+        if not is_iterable(objects):
+            objects = [objects]
+
+        unique_indexes = []
+
+        if create_indexes:
+            unique_indexes = self.create_index_for(objects)
+
+        ...
+
+        if refresh_after:
+            self.refresh_index(unique_indexes or list(group_by_index(objects).keys()))
