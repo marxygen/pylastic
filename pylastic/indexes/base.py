@@ -132,7 +132,11 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
         return {"mappings": {"properties": properties}}
 
     def get_body(self) -> dict:
-        return {field: getattr(self, field) for field in self._get_fields_with_types() if field != self.id_field}
+        return {
+            field: getattr(self, field)
+            for field in self._get_fields_with_types()
+            if field != self.id_field
+        }
 
     @classmethod
     def _get_fields_with_types(cls) -> Dict[str, "ElasticType"]:
@@ -238,7 +242,10 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
         body = ""
         for d in documents:
             body += (
-                json.dumps({"index": {"_index": d.get_index(), "_id": d.get_id()}}) + "\n" + json.dumps(d.get_body()) + "\n"
+                json.dumps({"index": {"_index": d.get_index(), "_id": d.get_id()}})
+                + "\n"
+                + json.dumps(d.get_body())
+                + "\n"
             )
         body += "\n"
         return RequestTemplate(body=body, method="POST", path="/_bulk")
