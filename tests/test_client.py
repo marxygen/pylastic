@@ -11,5 +11,5 @@ def client(monkeypatch):
     client = ElasticClient(
         host="localhost", port=123, username="user", password="password"
     )
-    client._client = elastic
+    client.es_client = elastic
     return client

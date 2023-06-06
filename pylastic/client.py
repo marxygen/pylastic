@@ -2,12 +2,14 @@ from typing import Optional, List
 from elasticsearch import Elasticsearch
 from pylastic.indexes import ElasticIndex
 from pylastic.request_template import RequestTemplate
-
+from elastic_transport._response import ApiResponse # noqa
 
 class ElasticClient:
     """
     ElasticSearch Client
     """
+
+    es_client: Elasticsearch
 
     def __init__(
         self, host: str, port: int, username: str, password: str, scheme: str = "https"
@@ -21,7 +23,7 @@ class ElasticClient:
         :param password: ES Password to use (BasicAuth)
         :param scheme: HTTP/HTTPS
         """
-        self._client = Elasticsearch(
+        self.es_client = Elasticsearch(
             hosts=[f"{scheme}://{host}:{port}"], basic_auth=(username, password)
         )
 
@@ -33,23 +35,17 @@ class ElasticClient:
         :param mapping: Mapping to specify. If `index` is a string, this parameter is **required**. If `index` is an `ElasticIndex` subclass,
         the generated mapping will be used
         """
-        self._client.create()  # TODO: make it work
+        self.es_client.create()  # TODO: make it work
 
     def execute(
         self,
         template: RequestTemplate
-        | dict
-        | str
-        | List[RequestTemplate]
-        | List[dict]
-        | List[str],
     ):
         """
         Execute a request
 
-        :param template: Request template to execute. If it's a `dict`, the client assumes the data provided is `RequestTemplate.body`.
-        If it's a string, the client assumes it's `RequestTemplate.query_params`
+        :param template: Request template to execute.
 
         :return:
         """
-        template = RequestTemplate.build(template)
+        response: ApiResponse = self.es_client.perform_request(**template.to_kwargs())

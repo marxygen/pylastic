@@ -67,5 +67,5 @@ To customize index creation, redefine `ElasticIndex.get_index()` method that ret
 `ElasticClient` is the wrapper for the official `Elasticsearch` package and exposes all the available methods but
 also provides convenience methods:
 - `create(index: ElasticIndex | str, mapping: Optional[dict])`. Creates an index with the mapping
-- `execute(template)`. Executes a `RequestTemplate` instance (see `execute` method definition for allowed template types).
+- `execute(template)`. Executes a `RequestTemplate` instance
 

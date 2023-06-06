@@ -11,9 +11,11 @@ class RequestTemplate:
     Contains data that is to be sent to the ES.
     """
 
+    path: str
     query_params: dict = None
     body: dict = None
     headers: dict = None
+    method: str = 'GET'
 
     def get_query_params_string(self) -> str:
         if not self.query_params:
@@ -28,44 +30,16 @@ class RequestTemplate:
 
         return isinstance(obj, RequestTemplate)
 
-    @classmethod
-    def build(
-        cls,
-        value: dict
-        | str
-        | List[dict]
-        | List[str]
-        | "RequestTemplate"
-        | List["RequestTemplate"],
-    ) -> "RequestTemplate" | List["RequestTemplate"]:
+    def to_kwargs(self) -> dict:
         """
-        :param value: Data to convert into RequestTemplate.
-        If it's a `dict`, the client assumes the data provided is `RequestTemplate.body`.
-        If it's a string, the client assumes it's `RequestTemplate.query_params`
+        Transform this RequestTemplate to kwargs that are recognized by `elasticsearch.perform_request`
 
-        :return: A RequestTemplate instance or a list of instances
+        :return: Dictionary of kwargs
         """
-        if RequestTemplate.is_template(value):
-            return value
-
-        if not is_iterable(value):
-            if isinstance(value, dict):
-                return RequestTemplate(body=value)
-            elif isinstance(value, str):
-                try:
-                    return RequestTemplate(
-                        query_params=dict(
-                            [e.split("=") for e in value.lstrip("?").split("&")]
-                        )
-                    )  # noqa
-                except ValueError as e:
-                    raise RuntimeError(
-                        f"Invalid string provided as `query_params`: {value}"
-                    ) from e
-            else:
-                raise ValueError(
-                    f"Unknown template type: {value} ({type(value).__name__})"
-                )
-
-        else:
-            return list(map(cls.build, value))
+        return {
+            'method': self.method,
+            'path': self.path.rstrip('?'),
+            'params': self.query_params,
+            'headers': self.headers,
+            'body': self.body
+        }
