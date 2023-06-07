@@ -1,0 +1,16 @@
+[project]
+name = "pylastic"
+version = "0.1.0"
+authors = [{"name" = "Mark Ivchenko", "email" = "mrk.ivchenko@gmail.com"}]
+description = "High-level Elasticsearch Client"
+readme = "README.md"
+keywords = ["elasticsearch, elastic"]
+requires-python = ">=3.10"
+dependencies = ["elasticsearch~=8.8.0", "elastic-transport~=8.4.0"]
+
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"
