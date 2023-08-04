@@ -15,7 +15,13 @@ class ElasticClient:
     es_client: Elasticsearch
 
     def __init__(
-        self, host: str, port: int, username: str, password: str, scheme: str = "https", connections_per_node: int = None
+        self,
+        host: str,
+        port: int,
+        username: str,
+        password: str,
+        scheme: str = "https",
+        connections_per_node: int = None,
     ):
         """
         Instantiate ElasticSearch client
@@ -30,7 +36,7 @@ class ElasticClient:
         self.es_client = Elasticsearch(
             hosts=[f"{scheme}://{host.strip('https://').strip('http://')}:{port}"],
             basic_auth=(username, password),
-            connections_per_node=connections_per_node
+            connections_per_node=connections_per_node,
         )
 
     def create_index(

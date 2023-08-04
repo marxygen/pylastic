@@ -82,7 +82,7 @@ from pylastic.configuration.ilm import ILMPolicy
 
 class MyILMPolicy(ILMPolicy):
     class Hot:
-      ...
+      
     
     class Meta:
         name = "" # Policy name. If not specified, lowercase class name will be used

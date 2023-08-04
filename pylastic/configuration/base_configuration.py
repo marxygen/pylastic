@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, List, Optional
 
 from pylastic.request_template import RequestTemplate
 
@@ -7,12 +7,10 @@ from pylastic.request_template import RequestTemplate
 class BaseClusterConfiguration(ABC):
     """This class provides a common client interface to all the available configuration options."""
 
-    @property
-    def _policy_name(self) -> str:
-        if not hasattr(self, 'Meta') or not getattr(self.Meta, 'name', None):
-            return self.__class__.__name__.lower()
-
-        return self.Meta.name
+    def _get_meta_attribute(self, name: str) -> Any | None:
+        if hasattr(self, "Meta") and (value := getattr(self.Meta, name)):
+            return value
+        return None
 
     @abstractmethod
     def to_requests(self) -> List[RequestTemplate]:
@@ -21,6 +19,10 @@ class BaseClusterConfiguration(ABC):
 
         :return: List of request templates to be executed sequentially
         """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def is_valid(self, raise_exception: bool = False) -> Optional[bool]:
         raise NotImplementedError()
 
     class Meta:
