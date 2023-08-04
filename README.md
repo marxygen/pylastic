@@ -71,3 +71,19 @@ also provides convenience methods:
 - `save(objects)`. Saves one or more `ElasticType` instances to the index.
 - `refresh_index(index)`. Refreshes the index.
 
+## Cluster Configuration
+Various cluster configurations are available from the `pylastic.configuration` module. They are documented in more detail below:
+
+### Index Lifecycle Management (ILM) (`pylastic.configuration.ilm`)
+Subclass the `ILMPolicy` class to define a policy. Use the declarative style. Specify configuration for different phases by
+creating the nested classes with the corresponding name (`Hot`, `Warm`, `Cold`, `Frozen`, `Delete`):
+```python
+from pylastic.configuration.ilm import ILMPolicy
+
+class MyILMPolicy(ILMPolicy):
+    class Hot:
+      ...
+    
+    class Meta:
+        name = "" # Policy name. If not specified, lowercase class name will be used
+```

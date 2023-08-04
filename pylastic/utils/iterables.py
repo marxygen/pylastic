@@ -42,12 +42,15 @@ def get_batches_with_size(
     batches = []
 
     current_batch = []
+    current_batch_size = 0
     for o in objects:
-        if full_size_of(o) + full_size_of(current_batch) >= max_size_bytes:
+        if current_batch_size + full_size_of(o) >= max_size_bytes:
             batches.append(current_batch)
             current_batch = [o]
+            current_batch_size = full_size_of(current_batch)
         else:
             current_batch.append(o)
+            current_batch_size += full_size_of(o)
     if current_batch:
         batches.append(current_batch)
     return batches
