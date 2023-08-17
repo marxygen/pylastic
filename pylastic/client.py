@@ -16,7 +16,7 @@ class ElasticClient:
 
     def __init__(
         self,
-        host: str,
+        host: str | List[str],
         port: int,
         username: str,
         password: str,
