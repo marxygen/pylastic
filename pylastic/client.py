@@ -47,7 +47,7 @@ class ElasticClient:
         )
 
     def create_index(
-        self, index: Type[ElasticIndex], index_name: Optional[str] = None
+        self, index: Type[ElasticIndex], index_name: Optional[str] = None, exists_ok: bool = False
     ) -> bool:
         """
         Create an Elasticsearch index from a `ElasticIndex` subclass (**not an instance**).
@@ -55,6 +55,7 @@ class ElasticClient:
 
         :param index: `ElasticIndex` subclass. Class **must** have `Meta.index` set or `index_name` argument must be specified.
         :param index_name: Custom index name to use
+        :param exists_ok: Whether to suppress `resource_already_exists_exception` error
         :return: Whether the index was successfully created in the cluster
         """
         if (
@@ -67,9 +68,15 @@ class ElasticClient:
                 f"Pass a class instance"
             )
 
-        return self.execute(index.get_static_index_creation_request(index_name))[
-            "acknowledged"
-        ]
+        try:
+            response = self.execute(index.get_static_index_creation_request(index_name))
+            return response["acknowledged"]
+
+        except BadRequestError as bad_request:
+            if bad_request.error == 'resource_already_exists_exception' and exists_ok:
+                return True
+
+            raise
 
     def execute(self, template: RequestTemplate):
         """
