@@ -34,6 +34,7 @@ These types will be used to *create a mapping* so that ES can correctly process 
 - `GeoPoint`. Allows to specify fields of type `geo_point`. Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 - `Text` (represents `text` and `match_only_text` types). Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/8.8/text.html)
 - `Keyword` (represents `keyword`, `constant_keyword` and `wildcard`). Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/8.8/keyword.html#keyword)
+- `Date` (represents `date` and allows to store a date and datetime). Read more [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
 #### Marking fields as optional
 To mark a field as optional, use `typing.Optional` with the type it's supposed to have, e.g. `Optional[GeoPoint]`

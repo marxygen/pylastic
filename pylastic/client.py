@@ -50,7 +50,7 @@ class ElasticClient:
         :param index_name: Custom index name to use
         :return: Whether the index was successfully created in the cluster
         """
-        if not index.get_static_index() and index_name is None:
+        if not hasattr(index, 'get_static_index') or not index.get_static_index() and index_name is None:
             raise RuntimeError(
                 f"Unable to create an elastic index with dynamic definition from a class. "
                 f"Pass a class instance"
