@@ -1,5 +1,5 @@
-from unittest.mock import MagicMock, call
-
+from unittest.mock import MagicMock, Mock, call, patch
+import pytest
 from pytest import fixture
 
 from pylastic.client import ElasticClient
@@ -25,10 +25,10 @@ class DynamicIndexExample(ElasticIndex):
 @fixture()
 def client(monkeypatch):
     elastic = MagicMock()
-    client = ElasticClient(
-        host="localhost", port=123, username="user", password="password"
-    )
-    client.es_client = elastic
+    with patch('pylastic.client.Elasticsearch', elastic):
+        client = ElasticClient(
+            host="localhost", port=123, username="user", password="password"
+        )
     return client
 
 
@@ -73,7 +73,7 @@ def test_create_multiple_indexes(client):
         },
     )
     assert (
-        client.es_client.perform_request.call_count == 1
+            client.es_client.perform_request.call_count == 1
     ), "Multiple requests are made for one index"
 
 
@@ -148,8 +148,13 @@ def test_create_multiple_indexes_for_dynamic_index(client):
         },
     )
     assert (
-        client.es_client.perform_request.call_count == 2
+            client.es_client.perform_request.call_count == 2
     ), "Multiple requests are made for one index"
+
+
+def test_create_invalid_index(client):
+    with pytest.raises(RuntimeError):
+        client.create_index(object)
 
 
 def test_refresh(client):
@@ -161,3 +166,11 @@ def test_refresh(client):
         headers={"accept": "application/json", "content-type": "application/json"},
         body=None,
     )
+
+
+def test_save_one_item(client, monkeypatch):
+    instance = Example(a='a', b=2)
+    monkeypatch.setattr(client, 'create_index_for', Mock())
+    client.save(instance, create_indexes=True)
+
+    client.create_index_for.assert_called_with([instance], ignore_400=True)
