@@ -63,6 +63,10 @@ will be applied:
 Note that ID field cannot be used in aggregations and is limited to 512 bytes.
 To customize index creation, redefine `ElasticIndex.get_index()` method that returns index name.
 
+### Decreasing index size
+The following tips might help you reduce the size of the index:
+- Decrease the number of replicas (via `Meta.replicas` attribute). This will have an impact on your index's availability but it may be a reasonable tradeoff
+- Use appropriate types for storing strings: consider `keyword`, `match_only_text`, etc.
 
 ## Client
 `ElasticClient` is the wrapper for the official `Elasticsearch` package and exposes all the available methods but
@@ -83,7 +87,7 @@ from pylastic.configuration.ilm import ILMPolicy
 
 class MyILMPolicy(ILMPolicy):
     class Hot:
-      
+      ...
     
     class Meta:
         name = "" # Policy name. If not specified, lowercase class name will be used
