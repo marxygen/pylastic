@@ -34,8 +34,13 @@ class ElasticClient:
         :param scheme: HTTP/HTTPS
         :param connections_per_node: Number of connections per node
         """
+        if isinstance(host, str):
+            hosts = [host]
+        else:
+            hosts = host
+
         self.es_client = Elasticsearch(
-            hosts=[f"{scheme}://{host.strip('https://').strip('http://')}:{port}"],
+            hosts=[f"{scheme}://{h.strip('https://').strip('http://')}:{port}" for h in hosts],
             basic_auth=(username, password),
             connections_per_node=connections_per_node,
             **kwargs,
