@@ -22,6 +22,7 @@ class ElasticClient:
         password: str,
         scheme: str = "https",
         connections_per_node: int = None,
+        **kwargs,
     ):
         """
         Instantiate ElasticSearch client
@@ -37,6 +38,7 @@ class ElasticClient:
             hosts=[f"{scheme}://{host.strip('https://').strip('http://')}:{port}"],
             basic_auth=(username, password),
             connections_per_node=connections_per_node,
+            **kwargs,
         )
 
     def create_index(
