@@ -27,7 +27,7 @@ Specify field along with its type using annotations:
 string_field: str
 integer_field: int
 ```
-You can use Pythonic types, but `pylastic` also provides a `pylastic.types` package with all of the
+You can use Pythonic types, but `pylastic` also provides a `pylastic.types` package with all the
 types ES supports (see them [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)).
 These types will be used to *create a mapping* so that ES can correctly process fields in your index.
 
