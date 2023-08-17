@@ -13,7 +13,7 @@ class ILMPolicy(BaseClusterConfiguration):
 
     ENDPOINT = "_ilm/policy/my_policy"
     HTTP_METHOD = "PUT"
-    PHASES = ['hot', 'warm', 'cold', 'frozen', 'delete']
+    PHASES = ["hot", "warm", "cold", "frozen", "delete"]
 
     @property
     def _policy_name(self) -> str:

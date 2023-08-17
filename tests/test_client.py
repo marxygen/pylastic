@@ -25,7 +25,7 @@ class DynamicIndexExample(ElasticIndex):
 @fixture()
 def client(monkeypatch):
     elastic = MagicMock()
-    with patch('pylastic.client.Elasticsearch', elastic):
+    with patch("pylastic.client.Elasticsearch", elastic):
         client = ElasticClient(
             host="localhost", port=123, username="user", password="password"
         )
@@ -73,7 +73,7 @@ def test_create_multiple_indexes(client):
         },
     )
     assert (
-            client.es_client.perform_request.call_count == 1
+        client.es_client.perform_request.call_count == 1
     ), "Multiple requests are made for one index"
 
 
@@ -148,7 +148,7 @@ def test_create_multiple_indexes_for_dynamic_index(client):
         },
     )
     assert (
-            client.es_client.perform_request.call_count == 2
+        client.es_client.perform_request.call_count == 2
     ), "Multiple requests are made for one index"
 
 
@@ -169,8 +169,8 @@ def test_refresh(client):
 
 
 def test_save_one_item(client, monkeypatch):
-    instance = Example(a='a', b=2)
-    monkeypatch.setattr(client, 'create_index_for', Mock())
+    instance = Example(a="a", b=2)
+    monkeypatch.setattr(client, "create_index_for", Mock())
     client.save(instance, create_indexes=True)
 
     client.create_index_for.assert_called_with([instance], ignore_400=True)

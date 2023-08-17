@@ -23,4 +23,8 @@ def test_get_batches_with_size():
 
     expected_batches = random.randint(1, 10)
     batch_size = ceil(total_size / expected_batches)
-    assert 0 <= abs(len(get_batches_with_size(objects, batch_size)) - expected_batches) <= 1
+    assert (
+        0
+        <= abs(len(get_batches_with_size(objects, batch_size)) - expected_batches)
+        <= 1
+    )
