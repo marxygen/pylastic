@@ -249,3 +249,7 @@ class ElasticIndex(metaclass=ElasticIndexMetaclass):
             )
         body += "\n"
         return RequestTemplate(body=body, method="POST", path="/_bulk")
+
+    @staticmethod
+    def get_index_deletion_request(index_name: str) -> RequestTemplate:
+        return RequestTemplate(method='DELETE', path=f'/{index_name}')

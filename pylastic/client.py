@@ -164,3 +164,22 @@ class ElasticClient:
 
             if refresh_after:
                 self.refresh_index(index)
+
+    def clear(self, index: Type[ElasticIndex]) -> None:
+        """
+        Clear an index
+
+        :param index: `ElasticIndex` subclass or instance
+        """
+        if isinstance(index, ElasticIndex):
+            index_name = index.get_index()
+        else:
+            index_name = index.Meta.index
+
+        # Delete an index
+        self.execute(ElasticIndex.get_index_deletion_request(index_name))
+        # Then recreate it
+        self.create_index(index)
+        # ES forum mentions that deleting all documents in the index by query is seriously inefficient, so it's better to delete the index
+        # and recreate it instead
+
