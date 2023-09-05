@@ -183,3 +183,11 @@ class ElasticClient:
         # ES forum mentions that deleting all documents in the index by query is seriously inefficient, so it's better to delete the index
         # and recreate it instead
 
+    def search(self, index: str, **kwargs) -> List[dict]:
+        """
+        Perform search.
+
+        :param index: Index(es) to search
+        :param kwargs: Additional kwargs accepted by the `Elasticsearch` `.search()` method
+        """
+        return self.es_client.search(index, **kwargs)
