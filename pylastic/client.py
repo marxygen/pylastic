@@ -190,4 +190,4 @@ class ElasticClient:
         :param index: Index(es) to search
         :param kwargs: Additional kwargs accepted by the `Elasticsearch` `.search()` method
         """
-        return self.es_client.search(index=index, **kwargs)
+        return self.es_client.search(index=index, **kwargs).body
