@@ -191,3 +191,12 @@ class ElasticClient:
         :param kwargs: Additional kwargs accepted by the `Elasticsearch` `.search()` method
         """
         return self.es_client.search(index=index, **kwargs).body
+
+    def count(self, index: str, **kwargs):
+        """
+        Count the number of documents matching a query
+
+        :param index: Index(es) to count documents in
+        :param kwargs: Additional kwargs accepted by the `Elasticsearch` `.count()` method
+        """
+        return self.es_client.count(index=index, **kwargs).body
