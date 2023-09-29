@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch, BadRequestError
 from pylastic.indexes import ElasticIndex
 from pylastic.request_template import RequestTemplate
 from elastic_transport._response import ApiResponse  # noqa
-
+from elasticsearch.exceptions import ApiError
 from pylastic.utils.iterables import is_iterable, group_by_index, get_batches_with_size
 
 
@@ -165,11 +165,12 @@ class ElasticClient:
             if refresh_after:
                 self.refresh_index(index)
 
-    def clear(self, index: Type[ElasticIndex]) -> None:
+    def clear(self, index: Type[ElasticIndex], ignore_error_codes: Optional[List] = None) -> None:
         """
         Clear an index
 
         :param index: `ElasticIndex` subclass or instance
+        :param ignore_error_codes: List of HTTP error codes to ignore
         """
         if isinstance(index, ElasticIndex):
             index_name = index.get_index()
@@ -177,9 +178,14 @@ class ElasticClient:
             index_name = index.Meta.index
 
         # Delete an index
-        self.execute(ElasticIndex.get_index_deletion_request(index_name))
+        try:
+            self.execute(ElasticIndex.get_index_deletion_request(index_name))
+        except ApiError as api_error:
+            if ignore_error_codes and api_error.status_code not in ignore_error_codes:
+                raise api_error
+
         # Then recreate it
-        self.create_index(index)
+        self.create_index(index, exists_ok=True)
         # ES forum mentions that deleting all documents in the index by query is seriously inefficient, so it's better to delete the index
         # and recreate it instead
 
